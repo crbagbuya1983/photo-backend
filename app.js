@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 app.use(cors());
@@ -114,6 +115,6 @@ app.put('/api/memories/:_id', async (req, res) => {
 });
 
 // Start the server
-app.listen(5000, () => {
-  console.log('Server started on port 5000');
+app.listen(PORT, () => {
+  console.log('Server started on port ${PORT}');
 });
