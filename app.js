@@ -10,7 +10,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
-// mongoose.connect('mongodb://localhost:27017/photoApp');
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/photoApp', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -18,7 +17,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/photoApp'
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => {
   console.error('MongoDB connection error:', err);
-  process.exit(1); // Exit if connection fails
 });
 
 // Mongoose schema
@@ -55,9 +53,7 @@ app.post('/api/memories', upload.single('photo'), (req, res) => {
     title: req.body.title,
     description: req.body.description,
     photo: req.file.buffer.toString('base64'), // Store base64 string
-    // isfavorite: req.body.isfavorite === 'false', // Convert string to boolean
-    isfavorite: req.body.isfavorite === 'true' ? true : false
-    // isfavorite: req.body.isfavorite
+    isfavorite: req.body.isfavorite === 'true' ? true : false,
   });
 
   newMemory.save()
@@ -89,7 +85,6 @@ app.delete('/api/memories/:_id', async (req, res) => {
 
 // Endpoint to update an existing memory (edit title, description, and isfavorite)
 app.put('/api/memories/:_id', async (req, res) => {
-  console.log('Request Body:', req.body);
   try {
     const { _id } = req.params;
     const updateData = {};
@@ -102,9 +97,7 @@ app.put('/api/memories/:_id', async (req, res) => {
       updateData.description = req.body.description;
     }
     if (req.body.isfavorite !== undefined) {
-      // updateData.isfavorite = req.body.isfavorite === 'true' ? true : false
       updateData.isfavorite = req.body.isfavorite === 'false' || req.body.isfavorite === true;
-      // updateData.isfavorite = req.body.isfavorite;
     }
 
     // Update the memory document without modifying the photo
@@ -114,7 +107,6 @@ app.put('/api/memories/:_id', async (req, res) => {
       return res.status(404).json({ error: 'Memory not found' });
     }
 
-    console.log('Updated Memory:', updatedMemory);
     res.json(updatedMemory);
   } catch (err) {
     console.error('Error updating memory:', err.message);
@@ -122,7 +114,12 @@ app.put('/api/memories/:_id', async (req, res) => {
   }
 });
 
+// Root endpoint to avoid "Cannot GET /" error
+app.get('/', (req, res) => {
+  res.send('Welcome to the Photo App Backend');
+});
+
 // Start the server
 app.listen(PORT, () => {
-  console.log('Server started on port ${PORT}');
+  console.log(`Server started on port ${PORT}`);
 });
