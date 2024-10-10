@@ -74,12 +74,36 @@ app.post('/api/memories', upload.single('photo'), (req, res) => {
 });
 
 // Endpoint to fetch all memories
+// app.get('/api/memories', async (req, res) => {
+//   try {
+//     const memories = await Memory.find();
+//     res.json(memories);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+// Paginated endpoint for fetching memories
 app.get('/api/memories', async (req, res) => {
   try {
-    const memories = await Memory.find();
-    res.json(memories);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10
+    const skip = (page - 1) * limit; // Calculate how many records to skip
+
+    const memories = await Memory.find()
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Memory.countDocuments(); // Get total number of documents
+
+    res.json({
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      memories,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
