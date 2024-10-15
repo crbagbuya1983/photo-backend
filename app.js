@@ -27,7 +27,7 @@ const uploadPhotoToS3 = async (file) => {
 };
 
 const corsOptions = {
-  origin: [process.env.VERCEL_FRONTEND_URL || process.env.LOCALHOST_FRONTEND], // Replace with your frontend URL
+  origin: ['https://disney-world-memories-6ecykxg1s-chris-projects-0f0e5269.vercel.app'], // Replace with your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, // If you need to allow credentials
 };
