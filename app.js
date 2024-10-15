@@ -3,25 +3,45 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
+// aws
+const AWS = require('aws-sdk');
+
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+const s3 = new AWS.S3();
+
+const uploadPhotoToS3 = async (file) => {
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: `${Date.now()}-${file.originalname}`, // File name
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  };
+
+  const uploadResult = await s3.upload(params).promise();
+  return uploadResult.Location; // S3 URL
+};
 
 const corsOptions = {
-  origin: process.env.VERCEL_FRONTEND_URL, // Replace with your frontend URL
+  origin: [process.env.VERCEL_FRONTEND_URL, process.env.LOCALHOST_FRONTEND], // Replace with your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, // If you need to allow credentials
 };
 
 const app = express();
 app.use(cors(corsOptions));
+// app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
 // mongoose.connect('mongodb://localhost:27017/photoApp');
 // mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/photoApp');
-mongoose.connect(process.env.MONGODB_URI || process.env.MONGODB_LOCALHOST, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI || process.env.MONGODB_LOCALHOST)
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => {
   console.error('MongoDB connection error:', err);
@@ -54,58 +74,56 @@ const upload = multer({
 });
 
 // Endpoint to add a new memory
-app.post('/api/memories', upload.single('photo'), (req, res) => {
+// app.post('/api/memories', upload.single('photo'), (req, res) => {
+//   if (!req.file) {
+//     return res.status(400).json({ error: 'No file uploaded or file too large' });
+//   }
+
+//   const newMemory = new Memory({
+//     title: req.body.title,
+//     description: req.body.description,
+//     photo: req.file.buffer.toString('base64'), // Store base64 string
+//     isfavorite: req.body.isfavorite === 'true' ? true : false
+//   });
+
+//   newMemory.save()
+//     .then((memory) => res.json(memory))
+//     .catch((err) => res.status(500).json({ error: err.message }));
+// });
+
+// Endpointto add a new memory , photo to upload to S3
+app.post('/api/memories', upload.single('photo'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded or file too large' });
   }
 
-  const newMemory = new Memory({
-    title: req.body.title,
-    description: req.body.description,
-    photo: req.file.buffer.toString('base64'), // Store base64 string
-    // isfavorite: req.body.isfavorite === 'false', // Convert string to boolean
-    isfavorite: req.body.isfavorite === 'true' ? true : false
-    // isfavorite: req.body.isfavorite
-  });
+  try {
+    const photoUrl = await uploadPhotoToS3(req.file); // Upload to S3 and get the URL
 
-  newMemory.save()
-    .then((memory) => res.json(memory))
-    .catch((err) => res.status(500).json({ error: err.message }));
+    const newMemory = new Memory({
+      title: req.body.title,
+      description: req.body.description,
+      photo: photoUrl, // Save the S3 URL
+      isfavorite: req.body.isfavorite === 'true' ? true : false,
+    });
+
+    await newMemory.save();
+    res.status(201).json(newMemory);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Endpoint to fetch all memories
-// app.get('/api/memories', async (req, res) => {
-//   try {
-//     const memories = await Memory.find();
-//     res.json(memories);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-// Paginated endpoint for fetching memories
 app.get('/api/memories', async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit) || 10; // Default limit to 10
-    const skip = (page - 1) * limit; // Calculate how many records to skip
-
-    const memories = await Memory.find()
-      .skip(skip)
-      .limit(limit);
-
-    const total = await Memory.countDocuments(); // Get total number of documents
-
-    res.json({
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
-      memories,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    const memories = await Memory.find();
+    res.json(memories);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
+
 
 app.delete('/api/memories/:_id', async (req, res) => {
   try {
@@ -134,9 +152,7 @@ app.put('/api/memories/:_id', async (req, res) => {
       updateData.description = req.body.description;
     }
     if (req.body.isfavorite !== undefined) {
-      // updateData.isfavorite = req.body.isfavorite === 'true' ? true : false
       updateData.isfavorite = req.body.isfavorite === 'false' || req.body.isfavorite === true;
-      // updateData.isfavorite = req.body.isfavorite;
     }
 
     // Update the memory document without modifying the photo
