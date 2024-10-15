@@ -92,7 +92,7 @@ const upload = multer({
 // });
 
 // Endpointto add a new memory , photo to upload to S3
-app.post('/api/memories', upload.single('photo'), async (req, res) => {
+app.post(process.env.HEROKU_PHOTO_ENDPOINT, upload.single('photo'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded or file too large' });
   }
@@ -115,7 +115,7 @@ app.post('/api/memories', upload.single('photo'), async (req, res) => {
 });
 
 // Endpoint to fetch all memories
-app.get('/api/memories', async (req, res) => {
+app.get(process.env.HEROKU_PHOTO_ENDPOINT, async (req, res) => {
   try {
     const memories = await Memory.find();
     res.json(memories);
@@ -125,7 +125,7 @@ app.get('/api/memories', async (req, res) => {
 });
 
 
-app.delete('/api/memories/:_id', async (req, res) => {
+app.delete(process.env.HEROKU_SELECTED_PHOTO, async (req, res) => {
   try {
     const result = await Memory.findByIdAndDelete(req.params._id);
     if (!result) {
@@ -138,7 +138,7 @@ app.delete('/api/memories/:_id', async (req, res) => {
 });
 
 // Endpoint to update an existing memory (edit title, description, and isfavorite)
-app.put('/api/memories/:_id', async (req, res) => {
+app.put(process.env.HEROKU_SELECTED_PHOTO, async (req, res) => {
   console.log('Request Body:', req.body);
   try {
     const { _id } = req.params;
