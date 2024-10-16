@@ -34,7 +34,16 @@ const corsOptions = {
 
 const app = express();
 app.use(cors(corsOptions));
-// app.options('*', cors(corsOptions));
+// Update the CORS Middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.VERCEL_FRONTEND_URL);
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+app.options('*', cors(corsOptions));
 // app.use(cors()); 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -91,6 +100,8 @@ const upload = multer({
 //     .then((memory) => res.json(memory))
 //     .catch((err) => res.status(500).json({ error: err.message }));
 // });
+
+console.log('Allowed origin:', process.env.VERCEL_FRONTEND_URL);
 
 // Endpointto add a new memory , photo to upload to S3
 app.post(process.env.PHOTO_ENDPOINT, upload.single('photo'), async (req, res) => {
