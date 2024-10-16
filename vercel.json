@@ -14,9 +14,6 @@
     ],
     "engines": {
       "node": "18.x"
-    },
-    "rewrites": [
-    { "source": "/manifest.json", "destination": "/public/manifest.json" }
-    ]
+    }
   }
   
