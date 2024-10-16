@@ -20,6 +20,7 @@ const uploadPhotoToS3 = async (file) => {
     Key: `${Date.now()}-${file.originalname}`, // File name
     Body: file.buffer,
     ContentType: file.mimetype,
+    ACL: 'public-read', // This makes the uploaded file public
   };
 
   const uploadResult = await s3.upload(params).promise();
