@@ -27,15 +27,11 @@ const uploadPhotoToS3 = async (file) => {
   return uploadResult.Location; // S3 URL
 };
 
-// const corsOptions = {
-//   origin: [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN], // Replace with your frontend URL
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   credentials: true, // If you need to allow credentials
-// };
+
 // Updated CORS configuration
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigins = [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN];
+    const allowedOrigins = [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN, process.env.LOCALHOST_FRONTEND];
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       // Allow requests with matching origins or requests with no origin (like from Postman)
       callback(null, true);
@@ -50,18 +46,10 @@ const corsOptions = {
 const app = express();
 app.use(cors(corsOptions));
 
-// Update the CORS Middleware
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN);
-//   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
-//   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//   res.header('Access-Control-Allow-Credentials', 'true');
-//   next();
-// });
 
 // Update the CORS Middleware
 app.use((req, res, next) => {
-  const allowedOrigins = [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN];
+  const allowedOrigins = [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN, process.env.LOCALHOST_FRONTEND];
   if (allowedOrigins.includes(req.headers.origin)) {
     res.header('Access-Control-Allow-Origin', req.headers.origin);
   }
@@ -78,7 +66,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
 // mongoose.connect('mongodb://localhost:27017/photoApp');
-// mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/photoApp');
 mongoose.connect(process.env.MONGODB_URI || process.env.MONGODB_LOCALHOST)
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => {
@@ -98,38 +85,21 @@ const MemorySchema = new mongoose.Schema({
 const Memory = mongoose.model('Memory', MemorySchema);
 
 // Multer setup to handle image uploads with increased file size limit
+//  Updated multer
 const storage = multer.memoryStorage();
-
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10 MB file size limit
-    fieldSize: 10 * 1024 * 1024, // 10 MB field size limit
-    fields: 10, // Max number of non-file fields
-    files: 1,  // Max number of files
-    parts: 20, // Max number of parts (fields + files)
+    fileSize: 10 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only images are allowed.'));
+    }
   },
 });
-
-// Endpoint to add a new memory
-// app.post('/api/memories', upload.single('photo'), (req, res) => {
-//   if (!req.file) {
-//     return res.status(400).json({ error: 'No file uploaded or file too large' });
-//   }
-
-//   const newMemory = new Memory({
-//     title: req.body.title,
-//     description: req.body.description,
-//     photo: req.file.buffer.toString('base64'), // Store base64 string
-//     isfavorite: req.body.isfavorite === 'true' ? true : false
-//   });
-
-//   newMemory.save()
-//     .then((memory) => res.json(memory))
-//     .catch((err) => res.status(500).json({ error: err.message }));
-// });
-
-console.log('Allowed origin:', process.env.VERCEL_FRONTEND_URL);
 
 // Endpointto add a new memory , photo to upload to S3
 app.post(process.env.PHOTO_ENDPOINT, upload.single('photo'), async (req, res) => {
@@ -164,7 +134,7 @@ app.get(process.env.PHOTO_ENDPOINT, async (req, res) => {
   }
 });
 
-
+// Endpoint to delete a memory
 app.delete(process.env.SELECTED_PHOTO, async (req, res) => {
   try {
     const result = await Memory.findByIdAndDelete(req.params._id);
