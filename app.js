@@ -37,7 +37,7 @@ const app = express();
 app.use(cors(corsOptions));
 // Update the CORS Middleware
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', process.env.VERCEL_FRONTEND_URL);
+  res.header('Access-Control-Allow-Origin', process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN);
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
