@@ -27,17 +27,44 @@ const uploadPhotoToS3 = async (file) => {
   return uploadResult.Location; // S3 URL
 };
 
+// const corsOptions = {
+//   origin: [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN], // Replace with your frontend URL
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   credentials: true, // If you need to allow credentials
+// };
+// Updated CORS configuration
 const corsOptions = {
-  origin: [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN], // Replace with your frontend URL
+  origin: (origin, callback) => {
+    const allowedOrigins = [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN];
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      // Allow requests with matching origins or requests with no origin (like from Postman)
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true, // If you need to allow credentials
+  credentials: true, // Allows sending cookies or authentication headers
 };
 
 const app = express();
 app.use(cors(corsOptions));
+
+// Update the CORS Middleware
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN);
+//   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
+//   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//   res.header('Access-Control-Allow-Credentials', 'true');
+//   next();
+// });
+
 // Update the CORS Middleware
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN);
+  const allowedOrigins = [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN];
+  if (allowedOrigins.includes(req.headers.origin)) {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
