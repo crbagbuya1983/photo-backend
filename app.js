@@ -184,6 +184,9 @@ app.put(process.env.SELECTED_PHOTO, async (req, res) => {
 // app.listen(5000, () => {
 //   console.log('Server started on port 5000');
 // });
+app.get('/', (req, res) => {
+  res.redirect('/api/memories'); // Redirect to /api/memories
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
