@@ -28,7 +28,7 @@ const uploadPhotoToS3 = async (file) => {
 };
 
 const corsOptions = {
-  origin: [process.env.VERCEL_FRONTEND_URL], // Replace with your frontend URL
+  origin: [process.env.VERCEL_FRONTEND_URL, process.env.VERCEL_FRONTEND_URL_MAIN], // Replace with your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, // If you need to allow credentials
 };
