@@ -44,6 +44,7 @@ AWS_REGION="us-east-2"
 # photo endpoints
 PHOTO_ENDPOINT="/api/memories"
 SELECTED_PHOTO="/api/memories/:_id"
+
 4. Start the server:
 npm start
 5. The backend will run on the defined port, or by default, on http://localhost:5000
