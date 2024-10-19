@@ -20,7 +20,7 @@ This is the backend service for the **Disney World Memories App**, which allows 
 
 ## Installation
 1. Clone this repository:
-   git clone https://github.com/your-username/disney-world-memories-backend.git
+   git clone https://github.com/crbagbuya1983/photo-backend.git
    cd disney-world-memories-backend
 2. Install dependencies:
 npm install
