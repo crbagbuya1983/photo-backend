@@ -11,7 +11,6 @@ This is the backend service for the **Disney World Memories App**, which allows 
 - **Environment Variables:** Use `.env` for secure storage of sensitive information.
 
 ## API Endpoints
-
 | Method | Endpoint                         | Description                          |
 |--------|----------------------------------|--------------------------------------|
 | POST   | `/api/memories`                  | Upload a photo and create a memory   |
@@ -20,9 +19,7 @@ This is the backend service for the **Disney World Memories App**, which allows 
 | PUT    | `/api/memories/:_id`             | Update a memory by `_id`             |
 
 ## Installation
-
 1. Clone this repository:
-   ```bash
    git clone https://github.com/your-username/disney-world-memories-backend.git
    cd disney-world-memories-backend
 2. Install dependencies:
@@ -30,7 +27,6 @@ npm install
 
 3. Set up environment variables: Create a .env file at the root of your project and include the following environment variables:
 MONGODB_URI="mongodb+srv://crbagbuya:Lfs5JgcOAocWUpIG@chrisagbuya-cluster.9xqga.mongodb.net/photoApp?retryWrites=true&w=majority"
-
 MONGODB_LOCALHOST="mongodb://localhost:27017/photoApp"
 MONGODB_CONNECTSTRING="mongodb+srv://crbagbuya:Lfs5JgcOAocWUpIG@chrisagbuya-cluster.9xqga.mongodb.net"
 VERCEL_FRONTEND_URL="https://disney-world-memories-mymoh222v-chris-projects-0f0e5269.vercel.app"
