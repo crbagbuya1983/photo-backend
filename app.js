@@ -6,6 +6,8 @@ require('dotenv').config();
 // aws
 const AWS = require('aws-sdk');
 
+const Memory = require('./models/Memory'); // Import the Memory model
+
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -74,15 +76,15 @@ mongoose.connect(process.env.MONGODB_URI || process.env.MONGODB_LOCALHOST)
 });
 
 
-// Mongoose schema
-const MemorySchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  photo: String, // Store image as a base64 string
-  isfavorite: Boolean,
-});
+// // Mongoose schema
+// const MemorySchema = new mongoose.Schema({
+//   title: String,
+//   description: String,
+//   photo: String, // Store image as a base64 string
+//   isfavorite: Boolean,
+// });
 
-const Memory = mongoose.model('Memory', MemorySchema);
+// const Memory = mongoose.model('Memory', MemorySchema);
 
 // Multer setup to handle image uploads with increased file size limit
 //  Updated multer
@@ -180,10 +182,6 @@ app.put(process.env.SELECTED_PHOTO, async (req, res) => {
   }
 });
 
-// Start the server
-// app.listen(5000, () => {
-//   console.log('Server started on port 5000');
-// });
 app.get('/', (req, res) => {
   res.redirect('/api/memories'); // Redirect to /api/memories
 });
